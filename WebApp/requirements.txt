@@ -1,0 +1,8 @@
+Flask
+Werkzeug
+google-auth
+google-auth-oauthlib
+google-cloud-firestore
+gunicorn
+google-api-python-client
+firebase-admin

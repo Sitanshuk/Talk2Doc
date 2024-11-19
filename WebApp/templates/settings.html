@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block title %}Settings{% endblock %}
+
+{% block content %}
+<h1>Settings</h1>
+<h2>Gmail Integration</h2>
+{% if gmail_authorized %}
+<p>Gmail is authorized. <a href="{{ url_for('revoke_gmail') }}">Revoke access</a></p>
+{% else %}
+<p>Gmail is not authorized. <a href="{{ url_for('login') }}">Authorize Gmail</a></p>
+{% endif %}
+
+<h2>Notion Integration</h2>
+{% if notion_authorized %}
+<p>Notion is authorized. <a href="{{ url_for('revoke_notion') }}">Revoke access</a></p>
+{% else %}
+<p>Notion is not authorized. <a href="{{ url_for('authorize_notion') }}">Authorize Notion</a></p>
+{% endif %}
+{% endblock %}
