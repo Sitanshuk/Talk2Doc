@@ -1,5 +1,6 @@
 import os
 import logging
+import requests
 from flask import Flask, render_template, redirect, url_for, request, session
 from google_auth_oauthlib.flow import Flow
 from google.oauth2.credentials import Credentials
@@ -158,11 +159,29 @@ def authorize_notion():
     session['notion_authorized'] = True
     return redirect(url_for('settings'))
 
+
 @app.route('/revoke_gmail')
 def revoke_gmail():
     user_email = session.pop('user_email', None)
     if user_email:
+        # Get the user's credentials
+        credentials = get_credentials(user_email)
+        if credentials:
+            try:
+                # Stop the Gmail watch
+                gmail_service = build('gmail', 'v1', credentials=credentials)
+                gmail_service.users().stop(userId=user_email).execute()
+
+                # Revoke the OAuth token
+                requests.post('https://oauth2.googleapis.com/revoke',
+                              params={'token': credentials.token},
+                              headers={'content-type': 'application/x-www-form-urlencoded'})
+            except Exception as e:
+                print(f"Error revoking access: {str(e)}")
+
+        # Delete the user's data from your database
         db.collection('users').document(user_email).delete()
+
     return redirect(url_for('settings'))
 
 @app.route('/revoke_notion')
