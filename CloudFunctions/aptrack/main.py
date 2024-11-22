@@ -28,7 +28,7 @@ def publish_message(messages):
 def load_CRFObject():
     object_path = '/tmp/CRFObject.pkl'
 
-    bucket = storage_client.bucket('ss19723bkt')
+    bucket = storage_client.bucket('BKT_NAME')
 
     blob = bucket.blob('CRFO.pkl')
 
