@@ -1,0 +1,7 @@
+functions-framework==3.*
+joblib
+numpy
+scikit-learn
+dill
+google-cloud-pubsub==2.21.5
+google-cloud-storage==2.9.0
