@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const form = document.querySelector('form');
     if (form) {
         form.addEventListener('submit', function(event) {
-            event.preventDefault(); // Prevent form submission
+            // event.preventDefault(); // Prevent form submission
             const userInput = form.querySelector('input[name="user_input"]').value;
             // Send user input to server using fetch
             fetch('/chat', {
