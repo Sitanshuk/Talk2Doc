@@ -9,6 +9,7 @@ from google.auth.transport.requests import Request
 from googleapiclient.errors import HttpError
 import firebase_admin
 from firebase_admin import credentials, firestore
+from google.cloud.firestore_v1.transforms import DELETE_FIELD
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
@@ -205,6 +206,9 @@ def revoke_gmail():
 
 @app.route('/revoke_notion')
 def revoke_notion():
+    user_email = session.get('user_email')
+    user_ref = db.collection('users').document(user_email)
+    user_ref.update({"notion_token" : DELETE_FIELD, "notion_page" : DELETE_FIELD})
     session['notion_authorized'] = False
     return redirect(url_for('settings'))
 
@@ -229,5 +233,5 @@ def logout():
 
 if __name__ == '__main__':
 
-    # app.run(port=5000, debug=True) #For Local
-    app.run(host='0.0.0.0', port=8080, debug=True)
+    app.run(port=5000, debug=True) #For Local
+    # app.run(host='0.0.0.0', port=8080, debug=True)
