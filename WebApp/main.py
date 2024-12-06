@@ -42,6 +42,7 @@ def save_credentials(credentials):
         'client_secret': credentials.client_secret,
         'scopes': credentials.scopes
     }
+    print(user_data)
 
     # Check if the collection exists, if not, create it
     users_collection = db.collection('users')
@@ -71,6 +72,14 @@ def get_credentials(user_email):
         )
         return refresh_token_if_expired(credentials)
     return None
+def get_notion_creds(user_email):
+    user_doc = db.collection('users').document(user_email).get()
+    if user_doc.exists:
+        user_data = user_doc.to_dict()
+        if user_data.get('notion_token') and user_data.get('notion_page'):
+            return True
+        else:
+            return False
 
 def refresh_token_if_expired(credentials):
     if credentials and credentials.expired and credentials.refresh_token:
@@ -133,7 +142,7 @@ def settings():
         credentials = get_credentials(user_email)
         if credentials:
             gmail_authorized = True
-    notion_authorized = session.get('notion_authorized', False)
+        notion_authorized = get_notion_creds(user_email) #Function returns status of notion authorization
     return render_template('settings.html', gmail_authorized=gmail_authorized, notion_authorized=notion_authorized)
 
 @app.route('/oauth2callback')
@@ -153,11 +162,21 @@ def oauth2callback():
         logger.error(f"Error in OAuth callback: {str(e)}")
         return "Error during authorization. Please try again.", 400
 
-@app.route('/authorize_notion')
+@app.route('/authorize_notion', methods=['GET', 'POST'])
 def authorize_notion():
-    # Implement Notion authorization here
-    session['notion_authorized'] = True
-    return redirect(url_for('settings'))
+    if request.method == 'POST':
+        notion_token = request.form.get('notion_token')
+        notion_page = request.form.get('notion_page')
+        print(notion_token, notion_page)
+        # Save to database
+        user_email = session.get('user_email')
+        print("Logged In User: ", user_email)
+        user_ref = db.collection('users').document(user_email)
+        user_ref.update({'notion_token': notion_token})
+        user_ref.update({'notion_page': notion_page})
+        session['notion_authorized'] = True
+        return redirect(url_for('settings'))
+    return render_template('settings.html')
 
 
 @app.route('/revoke_gmail')
