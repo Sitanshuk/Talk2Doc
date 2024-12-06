@@ -1,0 +1,6 @@
+functions-framework
+Flask
+python-dotenv
+requests
+firebase-admin
+google-cloud-pubsub

@@ -1,6 +1,8 @@
 import base64
 import functions_framework
 
+from concurrent.futures import TimeoutError
+
 import joblib
 from google.cloud import storage
 
@@ -12,23 +14,25 @@ import json
 
 storage_client = storage.Client()
 
+subscriber = pubsub_v1.SubscriberClient()
+
 def publish_message(messages):
     psub_client = pubsub_v1.PublisherClient()
     
-    topic_path = psub_client.topic_path('probable-surge-441900-q0', 'ProcessedEmailQueue')
+    topic_path = psub_client.topic_path('midterm-440408','rel-mail')
 
     try:
         message_data = messages.encode("utf-8")
         future = psub_client.publish(topic_path, data=message_data)
         
-        print(f"Published message ID: {future.result()}")
+        print(f"Published message to rel-mail. ID: {future.result()}")
     except Exception as e:
         print(f"An error occurred: {e}")
 
 def load_CRFObject():
     object_path = '/tmp/CRFObject.pkl'
 
-    bucket = storage_client.bucket('BKT_NAME')
+    bucket = storage_client.bucket('talk2data-bkt')
 
     blob = bucket.blob('CRFO.pkl')
 
@@ -39,22 +43,41 @@ def load_CRFObject():
 
     return crf_object
 
-@functions_framework.cloud_event
-def hello_pubsub(cloud_event):
-    a = base64.b64decode(cloud_event.data["message"]["data"])
-
-    emails = json.loads(a.decode('utf-8').replace("'", '"'))
-
-    text_data = [email['content'] for email in emails]
-
-    email_mdata = [(email['sender'], email['subject']) for email in emails]
-
-    # publish_message(json.dumps(list(zip(email_mdata, predictions))))
-
+@functions_framework.http
+def hello_main(cloud_event):
     crf_object = load_CRFObject()
 
-    a = json.dumps(list(zip(email_mdata, crf_object.run(text_data))))
+    subscription_path = subscriber.subscription_path('midterm-440408', 'aptrack-sub')
+    
+    message_list = []
 
-    print(a)
+    def callback(message):
+        print(f"Received message.")
+        b = json.loads(message.data.decode('utf-8'))
+        message_list.append(b)
+        message.ack()
 
-    publish_message(a)
+    streaming_pull_future = subscriber.subscribe(subscription_path, callback=callback)
+    print(f"Listening for messages on {subscription_path}..\n")
+
+    with subscriber:
+        try:
+            streaming_pull_future.result(timeout=5)
+        except TimeoutError:
+            streaming_pull_future.cancel()
+            streaming_pull_future.result()
+
+    text_data = [email['content'] for email in message_list]
+
+    classified_results = crf_object.run(text_data)
+
+    class_final = []
+
+    for i in range(len(message_list)):
+        if classified_results[i] != 'irrelevant':
+            e_mail = message_list[i]['email']
+            class_final.append({'email': e_mail, 'content': message_list[i]['content'], 'status': classified_results[i]})
+
+    publish_message(json.dumps(class_final))
+
+    return {'h': class_final}
