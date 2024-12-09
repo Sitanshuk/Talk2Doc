@@ -20,8 +20,10 @@
 <form action="{{ url_for('authorize_notion') }}" method="post">
     <label for="notion_token">Notion Secrets:</label>
     <input type="text" id="notion_token" name="notion_token" required><br><br>
-    <label for="notion_page">Notion Page ID:</label>
-    <input type="text" id="notion_page" name="notion_page" required><br><br>
+    <label for="notion_job_application_page">Notion Job Application Page ID:</label>
+    <input type="text" id="notion_job_application_page" name="notion_job_application_page"><br><br>
+    <label for="notion_notes_page">Notion Notes Page ID:</label>
+    <input type="text" id="notion_notes_page" name="notion_notes_page"><br><br>
     <input type="submit" value="Authorize Notion">
 </form>
 {% endif %}

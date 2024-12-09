@@ -79,7 +79,7 @@ def get_notion_creds(user_email):
     user_doc = db.collection('users').document(user_email).get()
     if user_doc.exists:
         user_data = user_doc.to_dict()
-        if user_data.get('notion_token') and user_data.get('notion_page'):
+        if user_data.get('notion_token') and (user_data.get('notion_job_application_page') or user_data.get('notion_notes_page')):
             return True
         else:
             return False
@@ -187,14 +187,15 @@ def oauth2callback():
 def authorize_notion():
     if request.method == 'POST':
         notion_token = request.form.get('notion_token')
-        notion_page = request.form.get('notion_page')
-        print(notion_token, notion_page)
+        notion_job_application_page = request.form.get('notion_job_application_page')
+        notion_notes_page = request.form.get('notion_notes_page')
         # Save to database
         user_email = session.get('user_email')
         print("Logged In User: ", user_email)
         user_ref = db.collection('users').document(user_email)
         user_ref.update({'notion_token': notion_token})
-        user_ref.update({'notion_page': notion_page})
+        user_ref.update({'notion_job_application_page': notion_job_application_page})
+        user_ref.update({'notion_notes_page': notion_notes_page})
         session['notion_authorized'] = True
         return redirect(url_for('settings'))
     return render_template('settings.html')
@@ -228,7 +229,7 @@ def revoke_gmail():
 def revoke_notion():
     user_email = session.get('user_email')
     user_ref = db.collection('users').document(user_email)
-    user_ref.update({"notion_token" : DELETE_FIELD, "notion_page" : DELETE_FIELD})
+    user_ref.update({"notion_token" : DELETE_FIELD, "notion_notes_page" : DELETE_FIELD, "notion_job_application_page" : DELETE_FIELD})
     session['notion_authorized'] = False
     return redirect(url_for('settings'))
 
@@ -253,5 +254,5 @@ def logout():
 
 if __name__ == '__main__':
 
-    # app.run(port=5000, debug=True) #For Local
-    app.run(host='0.0.0.0', port=8080, debug=True) #For Google App Engine
+    app.run(port=5000, debug=True) #For Local
+    # app.run(host='0.0.0.0', port=8080, debug=True) #For Google App Engine
