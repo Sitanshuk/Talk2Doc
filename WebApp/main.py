@@ -150,7 +150,7 @@ def chatbot():
     # Call the Cloud Function
     function_url = "https://processquery-v2-889977581797.us-central1.run.app"
 
-    response = requests.post(function_url, json=[{"content": message, "user_email" : user_email}])
+    response = requests.post(function_url, json={"content": message, "user_email" : user_email})
 
     return jsonify(response.json())
 
