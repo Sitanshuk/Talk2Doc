@@ -5,12 +5,29 @@
 {% block content %}
 <h1>Chat with AI</h1>
 <div id="chat-history">
-    {% if response %}
-    <p><strong>AI:</strong> {{ response }}</p>
-    {% endif %}
 </div>
-<form method="POST">
-    <input type="text" name="user_input" placeholder="Type your message..." required>
+<form id="chat-form">
+    <input type="text" id="user-input" placeholder="Type your message..." required>
     <button type="submit">Send</button>
 </form>
+<script>
+    document.getElementById('chat-form').addEventListener('submit', function(event) {
+        event.preventDefault();
+        const userInput = document.getElementById('user-input').value;
+        fetch('/chatbot', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ message: userInput }),
+        })
+        .then(response => response.json())
+        .then(data => {
+            const chatHistory = document.getElementById('chat-history');
+            chatHistory.innerHTML += `<p><strong>You:</strong> ${userInput}</p>`;
+            chatHistory.innerHTML += `<p><strong>AI:</strong> ${data.response}</p>`;
+            document.getElementById('user-input').value = '';
+        });
+    });
+</script>
 {% endblock %}

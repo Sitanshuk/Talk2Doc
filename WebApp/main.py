@@ -10,6 +10,8 @@ from googleapiclient.errors import HttpError
 import firebase_admin
 from firebase_admin import credentials, firestore
 from google.cloud.firestore_v1.transforms import DELETE_FIELD
+import requests
+from flask import jsonify
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
@@ -133,6 +135,24 @@ def login():
 @app.route('/chat')
 def chat():
     return render_template('chat.html')
+
+
+@app.route('/chatbot', methods=['POST'])
+def chatbot():
+    user_email = session.get('user_email')
+    if not user_email:
+        return jsonify({"response": "Please log in to use the chatbot.", "error": "unauthorized"}), 401
+    if not get_notion_creds(user_email): #Function returns status of notion authorization
+        return jsonify({"response": "Please Authorize Notion by going to the settings.", "error": "unauthorized"}), 401
+
+    message = request.json['message']
+
+    # Call the Cloud Function
+    function_url = "https://processquery-v2-889977581797.us-central1.run.app"
+
+    response = requests.post(function_url, json=[{"content": message, "user_email" : user_email}])
+
+    return jsonify(response.json())
 
 @app.route('/settings')
 def settings():
