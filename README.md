@@ -34,13 +34,14 @@ Talk2Data bridges these gaps by offering a holistic and integrated approach for 
 ---
 
 ## Architecture  
-![Architecture Diagram](./system design/architecture diagram.png)
+![Architecture Diagram](./system design/architecture-diagram.png)
 
 The system is divided into two primary workflows:  
 
 ### 1. **Notes Flow**  
-![Notes Flow Diagram 1](./system design/Notion data embeddgin dataflow dig.png)
-![Notes Flow Diagram 2](./system design/chatbot query response Dataflow sig.png)
+![Notes Flow Diagram 1](./system design/Notion-data-embeddgin-dataflow-dig.png)
+
+![Notes Flow Diagram 2](./system design/chatbot-query-response-Dataflow-dig.png)
 - Tracks changes in Notion pages where students store class notes.  
 - Retrieves new/updated data via Notion APIs every 5 minutes.  
 - Converts updated data into embeddings using **VertexAI** and stores them for efficient querying.  
@@ -53,7 +54,7 @@ The system is divided into two primary workflows:
 ---
 
 ### 2. **Application Tracker**  
-![Application Tracker Diagram](./system design/Job Application tracker Data flow dig.png)
+![Application Tracker Diagram](./system design/Job-Application-tracker-Data-flow-dig.png)
 - Scans Gmail inbox for job-related updates.  
 - Organizes data into Notion databases, tracking deadlines, interviews, and other stages automatically.  
 
