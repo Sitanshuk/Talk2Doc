@@ -1,0 +1,6 @@
+google-cloud-aiplatform==1.33.0
+flask
+pymupdf
+redis
+firebase-admin
+google-cloud-pubsub
